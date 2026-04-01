@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galilei Sani — Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ====== LOGIN PAGE ====== -->
+    <div id="loginSection" class="login-page">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="login-logo-mark"><i class="fas fa-graduation-cap"></i></div>
+                <h1>Galilei Sani</h1>
+            </div>
+            <h2>Accesso Sicuro</h2>
+            <p class="subtitle">Connettiti al tuo profilo Moodle</p>
+            <form id="loginForm">
+                <div class="form-field">
+                    <label for="username">Nome Utente</label>
+                    <input type="text" id="username" placeholder="es. mario.rossi" required autocomplete="username">
+                </div>
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span>Accedi a Moodle</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <div class="login-error" id="loginError"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== LOADER ====== -->
+    <div id="loader" class="hidden app-shell">
+        <div class="loader-wrap">
+            <div class="loader-ring"></div>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Connessione a Moodle...</p>
+        </div>
+    </div>
+
+    <!-- ====== DASHBOARD ====== -->
+    <div id="dashboardSection" class="hidden app-shell">
+
+        <!-- TOP NAVBAR -->
+        <nav class="app-navbar">
+            <div class="nav-logo">
+                <div class="nav-logo-mark"><i class="fas fa-graduation-cap"></i></div>
+                <span>Galilei Sani</span>
+            </div>
+
+            <ul class="nav-links">
+                <li><button class="nav-link active" data-view="dashboardGrid"><i class="fas fa-book-open" style="margin-right:6px;"></i>Corsi</button></li>
+                <li><button class="nav-link" data-view="calculatorView"><i class="fas fa-calculator" style="margin-right:6px;"></i>Calcolatore Assenze</button></li>
+                <li><button class="nav-link" data-view="scheduleView"><i class="fas fa-calendar-alt" style="margin-right:6px;"></i>Orario Lezioni</button></li>
+                <li><button class="nav-link" data-view="calendarView"><i class="fas fa-calendar-day" style="margin-right:6px;"></i>Calendario</button></li>
+            </ul>
+
+            <div class="nav-right">
+                <div class="nav-status offline" id="statusIndicator">
+                    <span class="dot"></span>
+                    <span id="statusText">Disconnesso</span>
+                </div>
+                <button class="nav-btn theme-toggle" id="themeToggle" title="Cambia tema">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+                <div class="nav-avatar" id="userAvatar">?</div>
+                <button class="nav-btn" onclick="logout()" title="Esci">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- PAGE CONTAINER -->
+        <div class="page-container">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Benvenuto, <span id="userNameDisplay">Studente</span> 👋</h1>
+                <p>La tua dashboard scolastica personale — Moodle Galilei Sani</p>
+            </div>
+
+            <!-- ===== CORSI VIEW ===== -->
+            <div id="dashboardGrid">
+
+                <!-- Filter Pills -->
+                <div class="filter-pills" id="filterList">
+                    <button class="filter-pill active" data-filter="all">
+                        <i class="fas fa-layer-group" style="margin-right:5px;"></i>Tutto
+                    </button>
+                </div>
+
+                <div class="main-grid">
+
+                    <!-- LEFT: Messages -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i class="fas fa-bell" style="margin-right:8px; color:var(--accent);"></i>Avvisi & Consegne</span>
+                            <span id="msgCount" style="font-size:0.8rem; color:var(--text-muted);">—</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="scroll-area">
+                                <ul class="msg-list" id="messagesList">
+                                    <li class="empty-state"><i class="fas fa-inbox"></i><p>Nessun avviso</p></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Files -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i class="fas fa-folder-open" style="margin-right:8px; color:var(--accent);"></i>Materiale Didattico</span>
+                            <span id="fileCount" style="font-size:0.8rem; color:var(--text-muted);">—</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="scroll-area" id="filesList">
+                                <div class="empty-state"><i class="fas fa-file-alt"></i><p>Nessun file</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ===== CALCOLATORE ASSENZE ===== -->
+            <div id="calculatorView" class="hidden">
+                <div class="card">
+                    <div class="card-header" style="padding:24px 28px 0;">
+                        <span class="card-title" style="font-size:1.2rem;"><i class="fas fa-calculator" style="margin-right:10px; color:var(--accent);"></i>Calcolatore Assenze</span>
+                    </div>
+                    <div class="card-body" style="padding:24px 28px 32px;">
+                        <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:24px;">
+                            Ore totali annue: <strong>1056</strong> · Limite legale: <strong>25% = 264 ore</strong> · Ogni giornata = 6 ore
+                        </p>
+
+                        <div class="calc-grid">
+                            <div class="calc-field">
+                                <label>Giorni di assenza intera</label>
+                                <input type="number" id="calcDays" min="0" value="0" placeholder="0">
+                            </div>
+                            <div class="calc-field">
+                                <label>Ritardi (ore)</label>
+                                <input type="number" id="calcLate" min="0" value="0" placeholder="0">
+                            </div>
+                            <div class="calc-field">
+                                <label>Uscite anticipate (ore)</label>
+                                <input type="number" id="calcEarly" min="0" value="0" placeholder="0">
+                            </div>
+                        </div>
+
+                        <button class="btn-calc" onclick="calcAbsences()">
+                            <i class="fas fa-calculator"></i> Calcola
+                        </button>
+
+                        <div class="calc-result" id="calcResult">
+                            <div class="result-bar">
+                                <div class="result-bar-fill" id="resultBar" style="width:0%"></div>
+                            </div>
+                            <div class="result-row">
+                                <span class="label">Totale ore assenti</span>
+                                <span class="value" id="r-hours">—</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="label">Percentuale assenze</span>
+                                <span class="value" id="r-percent">—</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="label">Ore rimanenti al limite (264h)</span>
+                                <span class="value" id="r-remaining">—</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="label">Giorni interi rimanenti</span>
+                                <span class="value" id="r-days-left">—</span>
+                            </div>
+                            <div id="r-status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ORARIO LEZIONI ===== -->
+            <div id="scheduleView" class="hidden">
+                <div class="card">
+                    <div class="card-header" style="padding:24px 28px 0;">
+                        <span class="card-title" style="font-size:1.2rem;"><i class="fas fa-calendar-alt" style="margin-right:10px; color:var(--accent);"></i>Orario Settimanale</span>
+                    </div>
+                    <div class="card-body" style="padding:24px 28px 32px;">
+                        <div class="schedule-wrapper">
+                            <table class="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:50px;">Ora</th>
+                                        <th>Lunedì</th>
+                                        <th>Martedì</th>
+                                        <th>Mercoledì</th>
+                                        <th>Giovedì</th>
+                                        <th>Venerdì</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="time-cell">1°</td>
+                                        <td rowspan="2" class="sc-sistemi">Lab. Sistemi e Reti</td>
+                                        <td class="sc-storia">Storia</td>
+                                        <td class="sc-matematica">Matematica</td>
+                                        <td rowspan="2" class="sc-info">Lab. Informatica</td>
+                                        <td class="sc-motoria">Scienze Motorie</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="time-cell">2°</td>
+                                        <td rowspan="2" class="sc-matematica">Matematica</td>
+                                        <td class="sc-tpsit">TPSIT</td>
+                                        <td class="sc-gestione">Gestione Progetto</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="time-cell">3°</td>
+                                        <td rowspan="2" class="sc-italiano">Italiano</td>
+                                        <td class="sc-italiano">Italiano</td>
+                                        <td class="sc-gestione">Gestione Progetto</td>
+                                        <td class="sc-gestione">Lab. Gestione</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="time-cell">4°</td>
+                                        <td rowspan="3" class="sc-tpsit">Lab. TPSIT</td>
+                                        <td class="sc-inglese">Inglese</td>
+                                        <td class="sc-inglese">Inglese</td>
+                                        <td class="sc-sistemi">Sistemi e Reti</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="time-cell">5°</td>
+                                        <td class="sc-religione">Religione</td>
+                                        <td rowspan="2" class="sc-info">Lab. Informatica</td>
+                                        <td class="sc-italiano">Italiano</td>
+                                        <td class="sc-storia">Storia</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="time-cell">6°</td>
+                                        <td class="sc-inglese">Inglese</td>
+                                        <td class="sc-sistemi">Sistemi e Reti</td>
+                                        <td class="sc-info">Informatica</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="time-cell">7°</td>
+                                        <td class="sc-empty"></td>
+                                        <td class="sc-motoria">Scienze Motorie</td>
+                                        <td class="sc-empty"></td>
+                                        <td class="sc-info">Informatica</td>
+                                        <td class="sc-empty"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CALENDARIO ===== -->
+            <div id="calendarView" class="hidden" style="display:flex; gap:20px; align-items:flex-start;">
+
+                <!-- Main Cal -->
+                <div class="card" style="flex:1; min-width:0;">
+                    <div class="card-header" style="padding:20px 24px 0;">
+                        <span class="card-title"><i class="fas fa-calendar-day" style="margin-right:8px; color:var(--accent);"></i>Calendario Moodle</span>
+                        <div class="cal-header-row" style="margin-bottom:0; justify-content:flex-end; flex:0; gap:12px;">
+                            <button class="cal-nav-btn" id="calPrev"><i class="fas fa-chevron-left"></i></button>
+                            <span class="cal-month-label" id="calMonthLabel">Mese Anno</span>
+                            <button class="cal-nav-btn" id="calNext"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:16px 20px 24px;">
+                        <div class="cal-weekdays">
+                            <div>Lun</div><div>Mar</div><div>Mer</div><div>Gio</div><div>Ven</div><div>Sab</div><div>Dom</div>
+                        </div>
+                        <div class="cal-grid" id="calGrid"></div>
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div id="calDetailsPanel" class="cal-details-panel hidden" style="width:300px; flex-shrink:0;">
+                    <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                        <h4 id="calDetailsTitle" style="font-size:0.95rem; font-weight:700;">Dettagli</h4>
+                        <button id="calCloseDetails" style="background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.1rem;"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div id="calDetailsContent" style="padding:12px; overflow-y:auto; max-height:500px; display:flex; flex-direction:column; gap:6px;">
+                        <p style="color:var(--text-muted); text-align:center; padding:24px 0; font-size:0.88rem;">Nessun evento.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- /page-container -->
+    </div><!-- /dashboardSection -->
+
+    <script src="script.js"></script>
+</body>
+</html>
